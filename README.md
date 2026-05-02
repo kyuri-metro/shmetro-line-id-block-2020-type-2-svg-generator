@@ -11,7 +11,7 @@
 
 ## 示例图
 
-待在 Umamichi.moe 更新介绍后，更新示例图。
+![2020 type 2 版线路号方块示例图](https://raw.githubusercontent.com/kyuri-metro/shmetro-line-id-block-2020-type-2-svg-generator/master/docs/readme-assets/output-example-2020-type-2.webp)
 
 统一参数规格：
 

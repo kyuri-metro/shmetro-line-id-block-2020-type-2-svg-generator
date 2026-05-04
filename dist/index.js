@@ -1,6 +1,15 @@
 import { SHMETRO_LINE_COLORS } from '@kyuri-metro/shmetro-palette';
 const FALLBACK_BACKGROUND = '#666666';
 const FALLBACK_FOREGROUND = '#000000';
+export const DEFAULT_LINE_ID_BLOCK_FONT_FAMILY = 'Arial, Helvetica, sans-serif';
+function escapeXml(value) {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+}
 function parseLineNumber(lineNumber) {
     const lineString = String(lineNumber).trim();
     if (!/^\d{1,2}$/.test(lineString)) {
@@ -23,13 +32,13 @@ function getBadgePalette(lineNumber, foreground, background) {
         foreground: foreground ?? metroPalette?.foreground ?? FALLBACK_FOREGROUND,
     };
 }
-function measureText(lineString, fontSize) {
+function measureText(lineString, fontSize, fontFamily) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     if (!context) {
         throw new Error('Failed to create canvas context');
     }
-    context.font = `${fontSize}px Arial`;
+    context.font = `${fontSize}px ${fontFamily}`;
     const metrics = context.measureText(lineString);
     return {
         actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
@@ -56,13 +65,13 @@ function scaleLayout(layout, nextHeight) {
         },
     };
 }
-function getBaseLayout(lineId, lineString) {
+function getBaseLayout(lineId, lineString, fontFamily) {
     const height = 100;
     const isSingleDigit = lineId < 10;
     const width = isSingleDigit ? 85 : 110;
     const fontSize = 114;
     const widthScale = lineId >= 20 && lineId % 10 !== 1 ? 0.9 : 1;
-    const measured = measureText(lineString, fontSize);
+    const measured = measureText(lineString, fontSize, fontFamily);
     const realWidth = measured.actualBoundingBoxRight + measured.actualBoundingBoxLeft;
     const expectedWidth = lineId === 11 ? 74 : lineId >= 20 && lineId % 10 === 1 ? 90 : 99;
     const scaledExpectedWidth = expectedWidth / widthScale;
@@ -98,12 +107,12 @@ function formatTransform(transform) {
     }
     return ` transform="${transform}"`;
 }
-export function generateLineIdBlock2020Type2Svg({ background, foreground, height = 100, lineNumber }) {
+export function generateLineIdBlock2020Type2Svg({ background, fontFamily = DEFAULT_LINE_ID_BLOCK_FONT_FAMILY, foreground, height = 100, lineNumber, }) {
     const parsed = parseLineNumber(lineNumber);
     if (!parsed) {
         return '';
     }
     const palette = getBadgePalette(lineNumber, foreground, background);
-    const layout = scaleLayout(getBaseLayout(parsed.lineId, parsed.lineString), height);
-    return `<svg width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${layout.width}" height="${layout.height}" fill="${palette.background}"/><text x="${layout.textLayout.x}" y="${layout.textLayout.y}" fill="${palette.foreground}" font-family="Arial" font-size="${layout.textLayout.fontSize}px"${formatLetterSpacing(layout.textLayout.letterSpacing)}${formatTransform(layout.textLayout.transform)}>${layout.text}</text></svg>`;
+    const layout = scaleLayout(getBaseLayout(parsed.lineId, parsed.lineString, fontFamily), height);
+    return `<svg width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${layout.width}" height="${layout.height}" fill="${palette.background}"/><text x="${layout.textLayout.x}" y="${layout.textLayout.y}" fill="${palette.foreground}" font-family="${escapeXml(fontFamily)}" font-size="${layout.textLayout.fontSize}px"${formatLetterSpacing(layout.textLayout.letterSpacing)}${formatTransform(layout.textLayout.transform)}>${layout.text}</text></svg>`;
 }

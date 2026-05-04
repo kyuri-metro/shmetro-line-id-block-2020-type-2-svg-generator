@@ -95,6 +95,14 @@ function getBaseLayout(lineId, lineString, fontFamily) {
         },
     };
 }
+export function getLineIdBlockWidth(lineNumber, height = 100) {
+    const parsed = parseLineNumber(lineNumber);
+    if (!parsed) {
+        return null;
+    }
+    const baseWidth = parsed.lineId < 10 ? 85 : 110;
+    return (baseWidth / 100) * height;
+}
 function formatLetterSpacing(letterSpacing) {
     if (letterSpacing === undefined) {
         return '';
